@@ -1,17 +1,20 @@
-from torch import Tensor
+import torch
 from torch.nn import MSELoss
+from torch.optim import SGD
 
 mse_loss = MSELoss()
 
-weights = Tensor([[0.1125, 0.7760]])
-bias = Tensor([[0.6158]])
+weights = torch.tensor([[0.1125, 0.7760]], requires_grad=True)
+bias = torch.tensor([[0.6158]], requires_grad=True)
 
-teeth = Tensor([[0.9, 0.9]])
-ball = Tensor([[0.1, 0.2]])
+optimizer = SGD([weights, bias], lr= 0.001)
+
+teeth = torch.tensor([[0.9, 0.9]])
+ball = torch.tensor([[0.1, 0.2]])
 
 dataset = [
-    (teeth, 1),
-    (ball, 0)
+    (teeth, torch.tensor([[1.0]])),
+    (ball, torch.tensor([[0.1]]))
 ]
 
 def get_threat_score(tensor_object):
@@ -21,8 +24,17 @@ def calc_loss(pred, actual):
     return mse_loss(pred, actual)
 
 
-score = get_threat_score(ball)
-ball_act = Tensor([[0]])
+for i in range(5):
+    for x, y in dataset:
+        optimizer.zero_grad()
+        x = get_threat_score(x)
+        print("Before update")
 
-loss = calc_loss(score, ball_act)
-loss
+        loss = mse_loss(x, y)
+
+        loss.backward()
+
+        optimizer.step()
+
+        print("After update")
+        print(weights, bias)
